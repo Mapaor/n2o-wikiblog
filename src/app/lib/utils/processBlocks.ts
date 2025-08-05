@@ -83,7 +83,8 @@ function processChunks(rich_text: Chunk[]): string {
             let text = chunk.text?.content || '';
             if (chunk.text?.link && chunk.text.link.url) {
                 // If the chunk is a link, wrap with \href
-                const url = chunk.text.link.url;
+                let url = chunk.text.link.url;
+                if (url.startsWith('/')) url = 'https://notion.so' + url
                 // Use https if the url starts with http only
                 const safeUrl = url.startsWith('http://') ? url.replace('http://', 'https://') : url;
                 let styledText = text;
