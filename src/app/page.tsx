@@ -8,7 +8,7 @@ import { useImageDownload } from './lib/hooks/dowloadImage';
 
 import TexCode from './components/TexCode';
 import ProgressBar from './components/ProgressBar';
-import ImageProgressBar from './components/imageProgressBar';
+import ImageProgressBar from './components/ImageProgressBar';
 import { Preliminar } from './lib/constants/preliminar';
 import { concatTex } from './lib/utils/TexConcat';
 import { postprocessTex } from './lib/utils/postProcess';
