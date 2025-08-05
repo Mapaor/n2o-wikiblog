@@ -6,8 +6,8 @@ export function postprocessTex(inputTex: string): [string, boolean] {
     const mergedTex: string = mergeConsecutiveLists(inputTex);
     const emojiConvertedTex: string = convertEmojis(mergedTex);
     const unicodeConvertedTex: [string, boolean] = convertUnicode(emojiConvertedTex);
-    const outputTex: string = unicodeConvertedTex[0];
-    return [outputTex, unicodeConvertedTex[1]];
+    const compareSignsProcessedTex: string = unicodeConvertedTex[0];
+    return [compareSignsProcessedTex, unicodeConvertedTex[1]];
 }
 
 function convertUnicode(text: string): [string, boolean] {
@@ -92,4 +92,9 @@ function convertEmojis(text: string): string {
     if (codepoints.length === 0) return match;
     return `\\emoji{${codepoints.join('-')}}`;
   });
+}
+
+function compareSigns(text: string): string {
+  // Transform all '\gt' to '>' and all '\lt' to '<'
+  return text.replace(/\\gt/g, '>').replace(/\\lt/g, '<');
 }
