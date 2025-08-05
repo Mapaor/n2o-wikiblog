@@ -7,14 +7,14 @@ export function useImageDownload() {
   const [downloadProgress, setDownloadProgress] = useState({ current: 0, total: 0 });
   const [zipBlob, setZipBlob] = useState<Blob | null>(null); // Store the ZIP blob
 
-  const prepareImagesZip = async (blocks: Block[]) => {
+  const prepareImagesZip = async (blocks: Block[], setError?: (error: string) => void) => {
     setIsDownloading(true);
     setDownloadProgress({ current: 0, total: 0 });
     setZipBlob(null);
 
     try {
       // Extract image information from blocks
-      const images = extractImagesFromBlocks(blocks);
+      const images = await extractImagesFromBlocks(blocks, setError);
       
       if (images.length === 0) {
         console.log('No images found in this page.');

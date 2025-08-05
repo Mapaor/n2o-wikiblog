@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { Block, ImageBlock } from '../notion/types';
+import fetchData from './fetchData';
 
 interface ImageInfo {
   url: string;
@@ -7,10 +8,13 @@ interface ImageInfo {
   blockId: string;
 }
 
-export function extractImagesFromBlocks(blocks: Block[]): ImageInfo[] {
+export async function extractImagesFromBlocks(
+  blocks: Block[], 
+  setError?: (error: string) => void
+): Promise<ImageInfo[]> {
   const images: ImageInfo[] = [];
   
-  function processBlock(block: Block) {
+  async function processBlock(block: Block): Promise<void> {
     if (block.type === 'image') {
       const imageBlock = block as ImageBlock;
       let imageUrl = '';
@@ -41,19 +45,33 @@ export function extractImagesFromBlocks(blocks: Block[]): ImageInfo[] {
     }
     
     // Process children recursively if they exist
-    if (block.has_children && block.children) {
-      processAllBlocks(block.children as Block[]);
+    if (block.has_children) {
+      try {
+        // If children are already loaded, use them
+        if (block.children && Array.isArray(block.children)) {
+          await processAllBlocks(block.children as Block[]);
+        } else {
+          // Otherwise fetch them from the API (like processBlocks does)
+          const children = await fetchData(block.id, setError);
+          if (children && Array.isArray(children)) {
+            await processAllBlocks(children as Block[]);
+          }
+        }
+      } catch (error) {
+        console.warn(`Error processing children of block ${block.id}:`, error);
+        // Continue processing other blocks even if this one fails
+      }
     }
   }
   
   // Process all blocks recursively
-  function processAllBlocks(blockList: Block[]) {
-    blockList.forEach(block => {
-      processBlock(block);
-    });
+  async function processAllBlocks(blockList: Block[]): Promise<void> {
+    for (const block of blockList) {
+      await processBlock(block);
+    }
   }
   
-  processAllBlocks(blocks);
+  await processAllBlocks(blocks);
   return images;
 }
 

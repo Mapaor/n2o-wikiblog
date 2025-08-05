@@ -67,7 +67,7 @@ export default function Home() {
           // Automatically prepare images after processing blocks
           if (jsonBlocs) {
             console.log("Preparant imatges...");
-            await prepareImagesZip(jsonBlocs as Block[]);
+            await prepareImagesZip(jsonBlocs as Block[], setError);
           }
         }
       } catch (err: unknown) {
