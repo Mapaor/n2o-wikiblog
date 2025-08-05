@@ -1,33 +1,29 @@
 'use client';
 import { useState } from 'react';
 import fetchData from './lib/utils/fetchData';
-import getPage from './lib/utils/getPage';
 import { processBlocks } from './lib/utils/processBlocks';
 import Head from 'next/head';
 import type { Block } from './lib/notion/types';
+import { useImageDownload } from './lib/hooks/dowloadImage';
 
 import TexCode from './components/TexCode';
 import ProgressBar from './components/ProgressBar';
+import ImageProgressBar from './components/imageProgressBar';
 import { Preliminar } from './lib/constants/preliminar';
 import { concatTex } from './lib/utils/TexConcat';
-import JSONCode from './components/JSONCode';
 import { postprocessTex } from './lib/utils/postProcess';
+import { Download } from "lucide-react";
 
 
 export default function Home() {
   const [pageId, setPageId] = useState('');
-  // Removed unused data state
   const [error, setError] = useState<string | null>(null);
   const [msgOutput, setOutput] = useState<string | null>(null);
   const [texOutput, setTeXOutput] = useState<string | null>(null);
   const [hasWeirdChars, setHasWeirdChars] = useState<boolean>(false);
   const [progress, setProgress] = useState<{ current: number; total: number; loading: boolean }>({ current: 0, total: 0, loading: false });
 
-
-
-
-
-  // No longer needed: fetchDataHandler (was unused and required the token)
+  const { prepareImagesZip, downloadZip, isDownloading, downloadProgress, hasImages } = useImageDownload();
 
   const generateTeX = async () => {
     let outputRebut: { numBlocsProcessats: number; msgErrorOutput: string | null; texBlocks?: { id: string; tex: string }[] } = { numBlocsProcessats: 0, msgErrorOutput: null };
@@ -41,6 +37,7 @@ export default function Home() {
         setProgress({ current: 0, total: 0, loading: false });
         return;
       }
+
       console.log('fetchData correcte');
       try {
         console.log("Abans de processar els blocs");
@@ -66,6 +63,12 @@ export default function Home() {
           console.log("Codi TeX rebut:", texString);
           setTeXOutput(postprocessTex(texString)[0]);
           setHasWeirdChars(postprocessTex(texString)[1]);
+          
+          // Automatically prepare images after processing blocks
+          if (jsonBlocs) {
+            console.log("Preparant imatges...");
+            await prepareImagesZip(jsonBlocs as Block[]);
+          }
         }
       } catch (err: unknown) {
         setProgress(prev => ({ ...prev, loading: false }));
@@ -86,6 +89,14 @@ export default function Home() {
     console.log("Conversio a document LaTeX finalitzada!");
   };
 
+  const handleDownloadImages = () => {
+    if (!hasImages) {
+      alert('No hi ha imatges disponibles per descarregar.');
+      return;
+    }
+    downloadZip(pageId);
+  };
+
   return (
     <div className="max-w-xl mx-auto p-8 font-sans text-gray-800">
       <Head>
@@ -102,10 +113,15 @@ export default function Home() {
           value={pageId}
           onChange={(e) => setPageId(e.target.value)}
         />
-        <button className="bg-green-600 text-white py-3 px-5 rounded-lg font-medium shadow hover:bg-green-500 transition whitespace-nowrap" onClick={generateTeX}>
+        <button 
+          className="bg-green-600 text-white cursor-pointer py-3 px-5 rounded-lg font-medium shadow hover:bg-green-500 transition whitespace-nowrap disabled:bg-gray-400" 
+          onClick={generateTeX}
+          disabled={progress.loading || isDownloading}
+        >
           Generar codi TeX
         </button>
       </div>
+      
       <div className="mt-2">
       {error && (
         <>
@@ -117,11 +133,36 @@ export default function Home() {
       {progress.loading && (
         <ProgressBar current={progress.current} total={progress.total} loading={progress.loading} />
       )}
+
+      {isDownloading && (
+        <ImageProgressBar current={downloadProgress.current} total={downloadProgress.total} loading={isDownloading} />
+      )}
+
       {texOutput && (
         <>
           <TexCode code={concatTex(Preliminar, texOutput, hasWeirdChars)} />
         </>
       )}
+
+      {/* {msgOutput && (
+        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+          <p className="text-green-800">{msgOutput}</p>
+        </div>
+      )} */}
+
+      {/* Add download images button */}
+      {texOutput && hasImages && (
+        <div className="mt-4">
+          <button 
+            className="flex items-center gap-2 bg-blue-600 text-white cursor-pointer py-2 px-4 rounded-lg font-medium shadow hover:bg-blue-500 transition disabled:bg-gray-400"
+            onClick={handleDownloadImages}
+            disabled={isDownloading || progress.loading}
+          >
+            <Download /> Descarregar imatges (ZIP)
+          </button>
+        </div>
+      )}
+
       </div>
     </div>
   );

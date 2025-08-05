@@ -304,10 +304,12 @@ function processImage(block: Block): string {
 
     if (imageBlock.image.type === 'file' && imageBlock.image.file) {
         const url = imageBlock.image.file.url;
+        // Download image from URL
         const cleanUrl = url.split(/[?#]/)[0];
         imageUrl = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
     } else if (imageBlock.image.type === 'external' && imageBlock.image.external) {
         imageUrl = imageBlock.image.external.url;
+        // Download image from URL
     }
 
     caption = processChunks(imageBlock.image.caption || []);
