@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Això és una app NextJS. El primer que has de fer és utilitzar GitHub Desktop (o simplement Git des de la terminal) per clonar el repositori en local.
 
-## Getting Started
+A continuació assegura't de tenir npm i node instal·lat.
 
-First, run the development server:
+Un cop tinguis el repositori en una carpeta local l'obres en el vscode (o el teu IDE de confiança) per poder-lo editar, i també obres la terminal integrada del vscode (o una externa i navegues fins al repositori) i fas:
+
+```bash
+npm install
+```
+
+Això instal·larà tots els paquets i dependències necessaries.
+
+A continuació crees un arxiu `.env.local` i hi poses una variable com la següent:
+
+```
+NOTION_TOKEN=ntn_moltsnumerosilletres
+```
+
+Finalment fas
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+I obres [http://localhost:3000](http://localhost:3000) en el navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Felicitats! Estàs visualitzant la aplicació web. Ara edita el que necessitis.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Ara obre el github desktop i publica la teva versió del repositori.
 
-## Learn More
+Per últim, pots entrar a Github > Settings > Apps > Vercel > Configure i afegir el teu repositori. A continuació en el dashboard de Vercel crees un nou projecte important el repositori. A 'Environment Variables' hi poses la variable del `.env.local`, i finalment cliques 'Deploy'.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Consulta [documentació de Next.js](https://nextjs.org/docs/app/building-your-application/deploying) per més detalls.
