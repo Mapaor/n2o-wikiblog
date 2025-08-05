@@ -151,6 +151,12 @@ export const Preliminar = `\\documentclass[a4paper,11pt]{article}
 ]{fancyquote}
 % PER UTILITZAR CARÀCTERS UNICODE
 \\usepackage{pifont}
+% PACKAGES PER COMPATIBILITAT AMB KATEX
+\\usepackage{braket}
+\\usepackage{mathtools}
+\\usepackage{physics}
+\\usepackage{cancel}
+\\usepackage[version=4]{mhchem}
 % PER AVISAR D'ELEMENTS QUE NO S'HAN PROCESSAT
 \\tcbset{highlight style/.style={
   colback=yellow,

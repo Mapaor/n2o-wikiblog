@@ -23,8 +23,8 @@ function escapeLatex(str: string): string {
 // Page info cache to store fetched page information
 const pageInfoCache = new Map<string, { title: string; icon: string }>();
 
-// Helper function to get page title and icon
-async function getPageInfo(pageId: string, notionToken: string): Promise<{ title: string; icon: string }> {
+// Helper function to get page title and icon  
+async function getPageInfo(pageId: string): Promise<{ title: string; icon: string }> {
     // Check cache first
     if (pageInfoCache.has(pageId)) {
         return pageInfoCache.get(pageId)!;
@@ -191,7 +191,6 @@ function processEquation(block: Block): string {
 
 async function processToggle(
     block: Block,
-    notionToken: string,
     pageId: string,
     level: number,
     setError?: (error: string) => void
@@ -204,7 +203,6 @@ async function processToggle(
             if (children && children.length > 0) {
                 const childResult = await processBlocks(
                     children as Block[],
-                    notionToken,
                     pageId,
                     level + 1,
                     block.id,
@@ -221,7 +219,6 @@ async function processToggle(
 
 async function processListItem(
     block: Block,
-    notionToken: string,
     pageId: string,
     level: number,
     setError?: (error: string) => void
@@ -238,7 +235,6 @@ async function processListItem(
     }
     const { childrenTeX, numBlocsProcessats, msgErrorOutput } = await processListItemChildren(
         block,
-        notionToken,
         pageId,
         level,
         setError
@@ -269,7 +265,6 @@ async function processListItem(
 
 async function processListItemChildren(
     block: Block,
-    notionToken: string,
     pageId: string,
     level: number,
     setError?: (error: string) => void
@@ -284,7 +279,6 @@ async function processListItemChildren(
             if (children && children.length > 0) {
                 const childResult = await processBlocks(
                     children as Block[],
-                    notionToken,
                     pageId,
                     level + 1,
                     block.id,
@@ -321,7 +315,6 @@ function processImage(block: Block): string {
 
 async function processTable(
     block: Table,
-    notionToken: string,
     pageId: string,
     setError?: (error: string) => void
 ): Promise<string> {
@@ -510,7 +503,6 @@ function processBreadcrumb(block: Block): string {
 
 async function processColumnList(
     block: ColumnList,
-    notionToken: string,
     pageId: string,
     level: number,
     setError?: (error: string) => void
@@ -544,7 +536,6 @@ async function processColumnList(
                 // Process the blocks inside the column recursively
                 const columnResult = await processBlocks(
                     columnBlocks as Block[],
-                    notionToken,
                     pageId,
                     level + 1,
                     column.id,
@@ -570,7 +561,6 @@ async function processColumnList(
 
 async function processSyncedBlock(
     block: SyncedBlock,
-    notionToken: string,
     pageId: string,
     level: number,
     setError?: (error: string) => void
@@ -586,7 +576,6 @@ async function processSyncedBlock(
         if (children && children.length > 0) {
             const childResult = await processBlocks(
                 children as Block[],
-                notionToken,
                 pageId,
                 level + 1,
                 block.id,
@@ -605,7 +594,7 @@ async function processSyncedBlock(
 }
 
 // Function to collect all page mentions from blocks and prefetch their info
-async function prefetchPageMentions(blocks: Block[], notionToken: string): Promise<void> {
+async function prefetchPageMentions(blocks: Block[]): Promise<void> {
     const pageIds = new Set<string>();
     
     function collectPageMentions(richText: Chunk[]) {
@@ -642,7 +631,7 @@ async function prefetchPageMentions(blocks: Block[], notionToken: string): Promi
     
     // Prefetch page info for all collected page IDs
     const prefetchPromises = Array.from(pageIds).map(pageId => 
-        getPageInfo(pageId, notionToken).catch(error => {
+        getPageInfo(pageId).catch(error => {
             console.error(`Failed to prefetch page info for ${pageId}:`, error);
         })
     );
@@ -663,7 +652,6 @@ function processNormalCallout(block: Callout): string {
 // Now we'll handle callouts with children
 async function processCallout(
     block: Callout,
-    notionToken: string,
     pageId: string,
     level: number,
     setError?: (error: string) => void
@@ -680,7 +668,6 @@ async function processCallout(
         if (children && children.length > 0) {
             const childResult = await processBlocks(
                 children as Block[],
-                notionToken,
                 pageId,
                 level + 1,
                 block.id,
@@ -749,7 +736,6 @@ function getCalloutTex(
 
 export async function processBlocks(
     blocks: Block[],
-    notionToken: string,
     pageId: string,
     level = 1,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -766,7 +752,7 @@ export async function processBlocks(
     if (level === 1) {
         console.log("Prefetching page mention information...");
         try {
-            await prefetchPageMentions(blocks, notionToken);
+            await prefetchPageMentions(blocks);
             console.log("Page mention prefetching completed.");
         } catch (error) {
             console.error("Error prefetching page mentions:", error);
@@ -808,7 +794,7 @@ export async function processBlocks(
                 case 'numbered_list_item':
                 case 'to_do':
                     isListItem = true;
-                    listItemResult = await processListItem(block, notionToken, pageId, level, setError);
+                    listItemResult = await processListItem(block, pageId, level, setError);
                     tex = listItemResult.tex;
                     break;
                 case 'equation':
@@ -818,10 +804,10 @@ export async function processBlocks(
                     tex = processImage(block);
                     break;
                 case 'table':
-                    tex = await processTable(block as Table, notionToken, pageId, setError);
+                    tex = await processTable(block as Table, pageId, setError);
                     break;
                 case 'toggle':
-                    tex = await processToggle(block, notionToken, pageId, level, setError);
+                    tex = await processToggle(block, pageId, level, setError);
                     break;
                 case 'quote':
                     tex = processQuote(block);
@@ -836,7 +822,7 @@ export async function processBlocks(
                     tex = processCode(block);
                     break;
                 case 'column_list':
-                    columnListResult = await processColumnList(block as ColumnList, notionToken, pageId, level, setError);
+                    columnListResult = await processColumnList(block as ColumnList, pageId, level, setError);
                     tex = columnListResult.tex;
                     break;
                 case 'bookmark':
@@ -864,12 +850,12 @@ export async function processBlocks(
                     tex = processBreadcrumb(block);
                     break;
                 case 'synced_block':
-                    syncedBlockResult = await processSyncedBlock(block as SyncedBlock, notionToken, pageId, level, setError)
+                    syncedBlockResult = await processSyncedBlock(block as SyncedBlock, pageId, level, setError)
                     tex = syncedBlockResult.tex;
                     break;
                 case 'callout':
                     if (block.has_children === true) {
-                        tex = await processCallout(block as Callout, notionToken, pageId, level, setError);
+                        tex = await processCallout(block as Callout, pageId, level, setError);
                     } else {
                         tex = processNormalCallout(block as Callout);
                     }
@@ -917,7 +903,6 @@ export async function processBlocks(
                     if (children && children.length > 0) {
                         const childResult = await processBlocks(
                             children as Block[],
-                            notionToken,
                             pageId,
                             level + 1,
                             block.id,

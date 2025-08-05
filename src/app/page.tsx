@@ -46,7 +46,6 @@ export default function Home() {
         console.log("Abans de processar els blocs");
         outputRebut = await processBlocks(
           jsonBlocs as Block[],
-          '', // Empty string instead of notionToken - will be ignored since API routes handle the token
           pageId,
           1,
           null,
