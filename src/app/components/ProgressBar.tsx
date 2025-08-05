@@ -21,7 +21,7 @@ export default function ProgressBar({ current, total, loading }: ProgressBarProp
         ></div>
       </div>
       {loading && (
-        <div className="text-xs text-gray-500 mt-2 text-center animate-pulse">Executant bloc {current} de {total}...</div>
+        <div className="text-xs text-gray-500 mt-2 text-center animate-pulse">Processant bloc {current} de {total}...</div>
       )}
     </div>
   );
