@@ -94,18 +94,18 @@ export default function Home() {
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
         />
       </Head>
-      <h3 className="mt-6 text-lg text-gray-600 font-semibold">Page ID</h3>
-      <input
-        className="w-full p-3 mt-2 border border-gray-300 rounded-md text-base"
-        type="text"
-        placeholder="23d72e8225e180a48cf1ca83ce688d22"
-        value={pageId}
-        onChange={(e) => setPageId(e.target.value)}
-      />
-      <button className="bg-green-600 mt-4 text-white py-3 px-5 rounded-lg font-medium shadow hover:bg-green-500 w-full transition" onClick={generateTeX}>
-        Generar codi TeX
-      </button>
-      <h3 className="mt-6 text-lg text-gray-600 font-semibold">Output</h3>
+      <div className="flex items-center gap-4 mt-2">
+        <input
+          className="flex-1 p-3 border border-gray-300 rounded-md text-base"
+          type="text"
+          placeholder="0a2bbe3a40484d25bdba5c37f2637532"
+          value={pageId}
+          onChange={(e) => setPageId(e.target.value)}
+        />
+        <button className="bg-green-600 text-white py-3 px-5 rounded-lg font-medium shadow hover:bg-green-500 transition whitespace-nowrap" onClick={generateTeX}>
+          Generar codi TeX
+        </button>
+      </div>
       <div className="mt-2">
       {error && (
         <>
@@ -117,30 +117,9 @@ export default function Home() {
       {progress.loading && (
         <ProgressBar current={progress.current} total={progress.total} loading={progress.loading} />
       )}
-
-      {msgOutput && (
-        <>
-          <p className="mt-10 font-bold text-gray-800">Missatge Output</p>
-          <pre className="mt-2 bg-gray-100 p-3 rounded text-sm font-mono whitespace-pre-wrap">{msgOutput}</pre>
-        </>
-      )}
-
       {texOutput && (
         <>
-          <p className="mt-10 font-bold text-gray-800">TeX generat</p>
-          <details className="mb-4">
-            <summary className="cursor-pointer font-semibold text-green-700">Preàmbul</summary>
-            <div className="mt-2">
-              <TexCode code={Preliminar} />
-            </div>
-          </details>
-          <TexCode code={texOutput} />
-          <details className="mt-4">
-            <summary className="cursor-pointer font-semibold text-green-700">Tot junt</summary>
-            <div className="mt-2">
           <TexCode code={concatTex(Preliminar, texOutput, hasWeirdChars)} />
-            </div>
-          </details>
         </>
       )}
       </div>
