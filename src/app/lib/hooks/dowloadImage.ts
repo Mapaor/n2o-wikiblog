@@ -8,7 +8,7 @@ export function useImageDownload() {
   const [downloadProgress, setDownloadProgress] = useState({ current: 0, total: 0 });
   const [zipBlob, setZipBlob] = useState<Blob | null>(null); // Store the ZIP blob
   const [downloadStats, setDownloadStats] = useState({ successful: 0, total: 0 }); // Track download statistics
-  const [imageMapping, setImageMapping] = useState<Map<string, string>>(new Map()); // URL to filename mapping
+  const [imageMapping, setImageMapping] = useState<Map<number, string>>(new Map()); // Sequential index to filename mapping
 
   const prepareImagesZip = async (blocks: Block[], setError?: (error: string) => void) => {
     setIsDownloading(true);
@@ -24,7 +24,7 @@ export function useImageDownload() {
       if (images.length === 0) {
         console.log('No images found in this page.');
         setIsDownloading(false);
-        return { zipBlob: null, imageMapping: new Map<string, string>() };
+        return { zipBlob: null, imageMapping: new Map<number, string>() };
       }
 
       console.log(`Found ${images.length} images to download`);
@@ -43,7 +43,7 @@ export function useImageDownload() {
         if (setError) {
           setError('No s\'han pogut descarregar les imatges. Pot ser que els enllaços hagin caducat.');
         }
-        return { zipBlob: null, imageMapping: new Map<string, string>() };
+        return { zipBlob: null, imageMapping: new Map<number, string>() };
       }
 
       // Count successful downloads from the ZIP
@@ -61,7 +61,7 @@ export function useImageDownload() {
       if (setError) {
         setError(`Error preparant les imatges: ${error instanceof Error ? error.message : 'Error desconegut'}`);
       }
-      return { zipBlob: null, imageMapping: new Map<string, string>() };
+      return { zipBlob: null, imageMapping: new Map<number, string>() };
     } finally {
       setIsDownloading(false);
       setDownloadProgress({ current: 0, total: 0 });

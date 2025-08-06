@@ -2,7 +2,7 @@ import { textcompUnicodeToMacro } from "../constants/textcomp";
 import emojiRegex from 'emoji-regex';
 
 
-export function postprocessTex(inputTex: string, imageMapping?: Map<string, string>): [string, boolean] {
+export function postprocessTex(inputTex: string, imageMapping?: Map<number, string>): [string, boolean] {
     const mergedTex: string = mergeConsecutiveLists(inputTex);
     const renamedImagesTex: string = imageMapping ? renameImages(mergedTex, imageMapping) : mergedTex;
     const emojiConvertedTex: string = convertEmojis(renamedImagesTex);
@@ -100,19 +100,32 @@ function compareSigns(text: string): string {
   return text.replace(/\\gt/g, '>').replace(/\\lt/g, '<');
 }
 
-function renameImages(text: string, imageMapping: Map<string, string>): string {
-  // Find all \includegraphics[scale = 0.4]{...} patterns and replace the image URLs with proper filenames
+function renameImages(text: string, imageMapping: Map<number, string>): string {
+  console.log('=== Renaming images in TeX (sequential mapping) ===');
+  console.log(`Processing text with ${imageMapping.size} sequential image mappings`);
+  
+  // Find all \includegraphics[scale = 0.4]{...} patterns and replace them sequentially
   const includeGraphicsPattern = /\\includegraphics\[scale = 0\.4\]\{([^}]+)\}/g;
   
-  return text.replace(includeGraphicsPattern, (match, imageUrl) => {
-    // Try to find the corresponding filename in our mapping
-    const filename = imageMapping.get(imageUrl);
+  let imageIndex = 1; // Start with image 1
+  let replacementCount = 0;
+  
+  const result = text.replace(includeGraphicsPattern, (match, imageUrl) => {
+    // Get the sequential filename for this image
+    const filename = imageMapping.get(imageIndex);
     if (filename) {
-      console.log(`Renaming image in TeX: ${imageUrl} -> ${filename}`);
+      replacementCount++;
+      console.log(`✓ Replaced image #${imageIndex}: ${imageUrl.substring(0, 50)}... -> ${filename}`);
+      imageIndex++;
       return `\\includegraphics[scale = 0.4]{${filename}}`;
     } else {
-      console.warn(`No filename mapping found for image URL: ${imageUrl}`);
+      console.warn(`✗ No sequential mapping found for image #${imageIndex}`);
+      imageIndex++;
       return match; // Keep original if no mapping found
     }
   });
+  
+  console.log(`Completed sequential image renaming: ${replacementCount} images replaced`);
+  
+  return result;
 }

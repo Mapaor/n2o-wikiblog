@@ -37,6 +37,7 @@ export async function extractImagesFromBlocks(
       
       if (imageUrl && filename) {
         console.log(`Found image: ${filename} (${imageBlock.image.type}) - URL: ${imageUrl.substring(0, 100)}...`);
+        
         images.push({
           url: imageUrl,
           filename,
@@ -92,12 +93,12 @@ export async function extractImagesFromBlocks(
 export async function downloadImages(
   images: ImageInfo[],
   onProgress?: (current: number, total: number) => void
-): Promise<{ zipBlob: Blob; imageMapping: Map<string, string> }> {
+): Promise<{ zipBlob: Blob; imageMapping: Map<number, string> }> {
   const zip = new JSZip();
   const total = images.length;
   let successCount = 0;
   let processedCount = 0;
-  const imageMapping = new Map<string, string>();
+  const imageMapping = new Map<number, string>(); // Sequential index to filename mapping
   let imageCounter = 1; // Counter for sequential naming
   
   for (let i = 0; i < images.length; i++) {
@@ -144,15 +145,18 @@ export async function downloadImages(
       }
       
       // Generate simple sequential filename
-      const finalFilename = `image${imageCounter}${extension}`;
+      const finalFilename = `imatge${imageCounter}${extension}`;
       imageCounter++;
       
       zip.file(finalFilename, blob);
       successCount++;
       console.log(`✓ Successfully downloaded: ${image.filename} -> ${finalFilename}`);
       
-      // Add to image mapping (URL -> sequential filename)
-      imageMapping.set(image.url, finalFilename);
+      // Add to sequential mapping: image order -> final filename
+      // This works because images are processed in the same order as in processBlocks
+      imageMapping.set(successCount, finalFilename); // Use successCount as the sequential index
+      
+      console.log(`Added mapping: image #${successCount} -> ${finalFilename}`);
       
       // Update progress after successful download
       if (onProgress) onProgress(processedCount, total);

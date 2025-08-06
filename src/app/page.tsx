@@ -65,8 +65,8 @@ export default function Home() {
             console.log("Preparant imatges...");
             const { imageMapping: downloadedImageMapping } = await prepareImagesZip(jsonBlocs as Block[], setError);
             
-            // Now postprocess TeX with image mapping
-            console.log("Post-processant TeX amb mapping d'imatges...");
+            // Now postprocess TeX with sequential image mapping
+            console.log("Post-processant TeX amb mapping sequencial d'imatges...");
             setTeXOutput(postprocessTex(texString, downloadedImageMapping)[0]);
             setHasWeirdChars(postprocessTex(texString, downloadedImageMapping)[1]);
           } else {
