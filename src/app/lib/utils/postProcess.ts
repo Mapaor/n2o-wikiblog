@@ -8,7 +8,8 @@ export function postprocessTex(inputTex: string, imageMapping?: Map<number, stri
     const emojiConvertedTex: string = convertEmojis(renamedImagesTex);
     const unicodeConvertedTex: [string, boolean] = convertUnicode(emojiConvertedTex);
     const compareSignsProcessedTex: string = compareSigns(unicodeConvertedTex[0]);
-    return [compareSignsProcessedTex, unicodeConvertedTex[1]];
+    const lgemHandledTex: string = handleLgem(compareSignsProcessedTex)
+    return [lgemHandledTex, unicodeConvertedTex[1]];
 }
 
 function convertUnicode(text: string): [string, boolean] {
@@ -128,4 +129,8 @@ function renameImages(text: string, imageMapping: Map<number, string>): string {
   console.log(`Completed sequential image renaming: ${replacementCount} images replaced`);
   
   return result;
+}
+
+function handleLgem(text: string): string{
+    return text.replace(/l·l/g, '\\lgem ');
 }
