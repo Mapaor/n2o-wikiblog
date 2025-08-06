@@ -18,18 +18,16 @@ import { Download } from "lucide-react";
 export default function Home() {
   const [pageId, setPageId] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [msgOutput, setOutput] = useState<string | null>(null);
   const [texOutput, setTeXOutput] = useState<string | null>(null);
   const [hasWeirdChars, setHasWeirdChars] = useState<boolean>(false);
   const [progress, setProgress] = useState<{ current: number; total: number; loading: boolean }>({ current: 0, total: 0, loading: false });
 
-  const { prepareImagesZip, downloadZip, isDownloading, downloadProgress, hasImages } = useImageDownload();
+  const { prepareImagesZip, downloadZip, isDownloading, downloadProgress, hasImages, downloadStats } = useImageDownload();
 
   const generateTeX = async () => {
     let outputRebut: { numBlocsProcessats: number; msgErrorOutput: string | null; texBlocks?: { id: string; tex: string }[] } = { numBlocsProcessats: 0, msgErrorOutput: null };
     try {
       setError(null);
-      setOutput(null);
       setTeXOutput(null);
       setProgress({ current: 0, total: 0, loading: true });
       const jsonBlocs = await fetchData(pageId, setError);
@@ -53,10 +51,10 @@ export default function Home() {
         console.log("Blocs processats correctament");
         console.log("outputRebut:", outputRebut);
         if (outputRebut.msgErrorOutput !== null) {
-          setOutput(outputRebut.msgErrorOutput);
+          setError(outputRebut.msgErrorOutput);
           setTeXOutput(null);
         } else {
-          setOutput(`Tot ha anat correctament. Blocs processats: ${outputRebut.numBlocsProcessats}`);
+          console.log(`Tot ha anat correctament. Blocs processats: ${outputRebut.numBlocsProcessats}`);
           const texString = (outputRebut.texBlocks && outputRebut.texBlocks.length > 0)
             ? outputRebut.texBlocks.map((b: { tex: string }) => b.tex).join('\n')
             : 'No TeX blocks generated.';
@@ -160,6 +158,13 @@ export default function Home() {
           >
             <Download /> Descarregar imatges (ZIP)
           </button>
+          {downloadStats.total > 0 && (
+            <p className="text-sm text-gray-600 mt-2">
+              {downloadStats.successful > 0 
+                ? `${downloadStats.successful} de ${downloadStats.total} imatges descarregades correctament` 
+                : `S'han detectat ${downloadStats.total} imatges`}
+            </p>
+          )}
         </div>
       )}
 

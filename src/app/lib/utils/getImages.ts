@@ -36,10 +36,19 @@ export async function extractImagesFromBlocks(
       }
       
       if (imageUrl && filename) {
+        console.log(`Found image: ${filename} (${imageBlock.image.type}) - URL: ${imageUrl.substring(0, 100)}...`);
         images.push({
           url: imageUrl,
           filename,
           blockId: block.id
+        });
+      } else {
+        console.warn(`Skipped image block ${block.id}: missing URL or filename`, {
+          type: imageBlock.image.type,
+          hasFile: !!imageBlock.image.file,
+          hasExternal: !!imageBlock.image.external,
+          url: imageUrl,
+          filename
         });
       }
     }
@@ -72,6 +81,11 @@ export async function extractImagesFromBlocks(
   }
   
   await processAllBlocks(blocks);
+  
+  console.log(`Image extraction complete. Found ${images.length} images:`, 
+    images.map(img => ({ filename: img.filename, blockId: img.blockId }))
+  );
+  
   return images;
 }
 
@@ -82,17 +96,19 @@ export async function downloadImages(
   const zip = new JSZip();
   const total = images.length;
   let successCount = 0;
+  let processedCount = 0;
   
   for (let i = 0; i < images.length; i++) {
     const image = images[i];
+    processedCount = i + 1;
+    
     try {
-      if (onProgress) onProgress(i + 1, total);
-      
-      console.log(`Downloading image ${i + 1}/${total}: ${image.filename}`);
+      console.log(`Downloading image ${processedCount}/${total}: ${image.filename}`);
       
       const response = await fetch(image.url);
       if (!response.ok) {
         console.warn(`Failed to download image: ${image.filename} (${response.status} ${response.statusText})`);
+        if (onProgress) onProgress(processedCount, total);
         continue;
       }
       
@@ -101,16 +117,37 @@ export async function downloadImages(
       // Ensure we have a valid image blob
       if (blob.size === 0) {
         console.warn(`Empty blob for image: ${image.filename}`);
+        if (onProgress) onProgress(processedCount, total);
         continue;
       }
       
-      zip.file(image.filename, blob);
+      // Handle duplicate filenames by appending a counter
+      let finalFilename = image.filename;
+      let counter = 1;
+      while (zip.file(finalFilename)) {
+        const dotIndex = image.filename.lastIndexOf('.');
+        if (dotIndex !== -1) {
+          const name = image.filename.substring(0, dotIndex);
+          const extension = image.filename.substring(dotIndex);
+          finalFilename = `${name}_${counter}${extension}`;
+        } else {
+          finalFilename = `${image.filename}_${counter}`;
+        }
+        counter++;
+      }
+      
+      zip.file(finalFilename, blob);
       successCount++;
+      console.log(`✓ Successfully downloaded: ${finalFilename}`);
+      
+      // Update progress after successful download
+      if (onProgress) onProgress(processedCount, total);
       
       // Add small delay to avoid overwhelming the server
       await new Promise(resolve => setTimeout(resolve, 100));
     } catch (error) {
-      console.error(`Error downloading image ${image.filename}:`, error);
+      console.error(`✗ Error downloading image ${image.filename}:`, error);
+      if (onProgress) onProgress(processedCount, total);
     }
   }
   
