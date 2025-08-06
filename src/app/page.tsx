@@ -20,6 +20,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [texOutput, setTeXOutput] = useState<string | null>(null);
   const [hasWeirdChars, setHasWeirdChars] = useState<boolean>(false);
+  const [hasSmall, setHasSmallCommand] = useState<boolean>(false);
   const [progress, setProgress] = useState<{ current: number; total: number; loading: boolean }>({ current: 0, total: 0, loading: false });
 
   const { prepareImagesZip, downloadZip, isDownloading, downloadProgress, hasImages, downloadStats } = useImageDownload();
@@ -69,10 +70,12 @@ export default function Home() {
             console.log("Post-processant TeX amb mapping sequencial d'imatges...");
             setTeXOutput(postprocessTex(texString, downloadedImageMapping)[0]);
             setHasWeirdChars(postprocessTex(texString, downloadedImageMapping)[1]);
+            setHasSmallCommand(postprocessTex(texString, downloadedImageMapping)[2]);
           } else {
             // No images to process, just do regular postprocessing
             setTeXOutput(postprocessTex(texString)[0]);
             setHasWeirdChars(postprocessTex(texString)[1]);
+            setHasSmallCommand(postprocessTex(texString)[2]);
           }
         }
       } catch (err: unknown) {
@@ -145,15 +148,9 @@ export default function Home() {
 
       {texOutput && (
         <>
-          <TexCode code={concatTex(Preliminar, texOutput, hasWeirdChars)} />
+          <TexCode code={concatTex(Preliminar, texOutput, hasWeirdChars, hasSmall)} />
         </>
       )}
-
-      {/* {msgOutput && (
-        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-green-800">{msgOutput}</p>
-        </div>
-      )} */}
 
       {/* Add download images button */}
       {texOutput && hasImages && (

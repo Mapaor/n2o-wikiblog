@@ -2,14 +2,15 @@ import { textcompUnicodeToMacro } from "../constants/textcomp";
 import emojiRegex from 'emoji-regex';
 
 
-export function postprocessTex(inputTex: string, imageMapping?: Map<number, string>): [string, boolean] {
+export function postprocessTex(inputTex: string, imageMapping?: Map<number, string>): [string, boolean, boolean] {
     const mergedTex: string = mergeConsecutiveLists(inputTex);
     const renamedImagesTex: string = imageMapping ? renameImages(mergedTex, imageMapping) : mergedTex;
     const emojiConvertedTex: string = convertEmojis(renamedImagesTex);
     const unicodeConvertedTex: [string, boolean] = convertUnicode(emojiConvertedTex);
     const compareSignsProcessedTex: string = compareSigns(unicodeConvertedTex[0]);
     const lgemHandledTex: string = handleLgem(compareSignsProcessedTex)
-    return [lgemHandledTex, unicodeConvertedTex[1]];
+    const smallPresent: boolean = noticeSmall(lgemHandledTex);
+    return [lgemHandledTex, unicodeConvertedTex[1], smallPresent];
 }
 
 function convertUnicode(text: string): [string, boolean] {
@@ -133,4 +134,10 @@ function renameImages(text: string, imageMapping: Map<number, string>): string {
 
 function handleLgem(text: string): string{
     return text.replace(/l·l/g, '\\lgem ');
+}
+
+
+function noticeSmall(text: string): boolean {
+  // Inspect for commands like '\small', '\footnotesize', '\scriptsize' and '\tiny'.
+  return /\\(small|footnotesize|scriptsize|tiny)\b/.test(text);
 }
