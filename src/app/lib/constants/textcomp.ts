@@ -75,7 +75,7 @@ export const textcompUnicodeToMacro: Record<string, string> = {
   "00AA": "\\textordfeminine",
   "00BA": "\\textordmasculine",
   "00B6": "\\textparagraph",
-  "00B7": "\\textperiodcentered",
+  "00B7": "\\lgem", // Special handling
   "2031": "\\textpertenthousand",
   "2030": "\\textperthousand",
   "20B1": "\\textpeso",

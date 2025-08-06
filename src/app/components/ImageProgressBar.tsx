@@ -21,7 +21,7 @@ export default function ImageProgressBar({ current, total, loading }: ProgressBa
         ></div>
       </div>
       {loading && (
-        <div className="text-xs text-gray-500 mt-2 text-center animate-pulse">Descarregant imatge {current} de {total}...</div>
+        <div className="text-xs text-gray-500 mt-2 text-center animate-pulse">Descarregant image {current} de {total} imatges...</div>
       )}
     </div>
   );

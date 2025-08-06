@@ -92,18 +92,20 @@ export async function extractImagesFromBlocks(
 export async function downloadImages(
   images: ImageInfo[],
   onProgress?: (current: number, total: number) => void
-): Promise<Blob> {
+): Promise<{ zipBlob: Blob; imageMapping: Map<string, string> }> {
   const zip = new JSZip();
   const total = images.length;
   let successCount = 0;
   let processedCount = 0;
+  const imageMapping = new Map<string, string>();
+  let imageCounter = 1; // Counter for sequential naming
   
   for (let i = 0; i < images.length; i++) {
     const image = images[i];
     processedCount = i + 1;
     
     try {
-      console.log(`Downloading image ${processedCount}/${total}: ${image.filename}`);
+      console.log(`Downloading image ${processedCount}/${total}: ${image.filename} -> image${imageCounter}`);
       
       const response = await fetch(image.url);
       if (!response.ok) {
@@ -121,24 +123,36 @@ export async function downloadImages(
         continue;
       }
       
-      // Handle duplicate filenames by appending a counter
-      let finalFilename = image.filename;
-      let counter = 1;
-      while (zip.file(finalFilename)) {
-        const dotIndex = image.filename.lastIndexOf('.');
-        if (dotIndex !== -1) {
-          const name = image.filename.substring(0, dotIndex);
-          const extension = image.filename.substring(dotIndex);
-          finalFilename = `${name}_${counter}${extension}`;
+      // Get file extension from original filename or URL
+      let extension = '';
+      if (image.filename.includes('.')) {
+        extension = image.filename.substring(image.filename.lastIndexOf('.'));
+      } else {
+        // Try to guess extension from content type
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
+          extension = '.jpg';
+        } else if (contentType?.includes('png')) {
+          extension = '.png';
+        } else if (contentType?.includes('gif')) {
+          extension = '.gif';
+        } else if (contentType?.includes('webp')) {
+          extension = '.webp';
         } else {
-          finalFilename = `${image.filename}_${counter}`;
+          extension = '.jpg'; // Default fallback
         }
-        counter++;
       }
+      
+      // Generate simple sequential filename
+      const finalFilename = `image${imageCounter}${extension}`;
+      imageCounter++;
       
       zip.file(finalFilename, blob);
       successCount++;
-      console.log(`✓ Successfully downloaded: ${finalFilename}`);
+      console.log(`✓ Successfully downloaded: ${image.filename} -> ${finalFilename}`);
+      
+      // Add to image mapping (URL -> sequential filename)
+      imageMapping.set(image.url, finalFilename);
       
       // Update progress after successful download
       if (onProgress) onProgress(processedCount, total);
@@ -157,5 +171,6 @@ export async function downloadImages(
     throw new Error('No images could be downloaded');
   }
   
-  return await zip.generateAsync({ type: 'blob' });
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  return { zipBlob, imageMapping };
 }

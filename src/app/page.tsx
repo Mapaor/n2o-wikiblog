@@ -58,14 +58,21 @@ export default function Home() {
           const texString = (outputRebut.texBlocks && outputRebut.texBlocks.length > 0)
             ? outputRebut.texBlocks.map((b: { tex: string }) => b.tex).join('\n')
             : 'No TeX blocks generated.';
-          console.log("Codi TeX rebut:", texString);
-          setTeXOutput(postprocessTex(texString)[0]);
-          setHasWeirdChars(postprocessTex(texString)[1]);
+          console.log("Codi TeX rebut (pre-postprocessing):", texString);
           
-          // Automatically prepare images after processing blocks
+          // Download images and get mapping
           if (jsonBlocs) {
             console.log("Preparant imatges...");
-            await prepareImagesZip(jsonBlocs as Block[], setError);
+            const { imageMapping: downloadedImageMapping } = await prepareImagesZip(jsonBlocs as Block[], setError);
+            
+            // Now postprocess TeX with image mapping
+            console.log("Post-processant TeX amb mapping d'imatges...");
+            setTeXOutput(postprocessTex(texString, downloadedImageMapping)[0]);
+            setHasWeirdChars(postprocessTex(texString, downloadedImageMapping)[1]);
+          } else {
+            // No images to process, just do regular postprocessing
+            setTeXOutput(postprocessTex(texString)[0]);
+            setHasWeirdChars(postprocessTex(texString)[1]);
           }
         }
       } catch (err: unknown) {
