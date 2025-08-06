@@ -6,7 +6,7 @@ export function postprocessTex(inputTex: string): [string, boolean] {
     const mergedTex: string = mergeConsecutiveLists(inputTex);
     const emojiConvertedTex: string = convertEmojis(mergedTex);
     const unicodeConvertedTex: [string, boolean] = convertUnicode(emojiConvertedTex);
-    const compareSignsProcessedTex: string = unicodeConvertedTex[0];
+    const compareSignsProcessedTex: string = compareSigns(unicodeConvertedTex[0]);
     return [compareSignsProcessedTex, unicodeConvertedTex[1]];
 }
 
