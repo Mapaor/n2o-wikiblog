@@ -23,7 +23,7 @@ function convertUnicode(text: string): [string, boolean] {
       // Ignore common accented Latin characters (í, ü, etc.) and right single quotation mark (’)
       return char;
     } else if (hexCode && textcompUnicodeToMacro[hexCode]) {
-      return textcompUnicodeToMacro[hexCode] + ' ';
+      return textcompUnicodeToMacro[hexCode] + '\\;\\!\\! ';
     } else {
       hasWeirdChars = true;
       return '\\notRendered{U+' + hexCode + '}';
